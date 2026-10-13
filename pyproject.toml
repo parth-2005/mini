@@ -1,0 +1,15 @@
+[project]
+name = "igmls"
+version = "0.1.0"
+description = "Python port of Iterative Global Mapping-Local Searching for heterogeneous change detection with unregistered images"
+requires-python = ">=3.10"
+dependencies = ["numpy", "scipy", "scikit-image", "matplotlib", "imageio"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.setuptools]
+packages = ["igmls"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
