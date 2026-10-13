@@ -42,6 +42,8 @@ The demo prints OA / kappa / F1 per iteration and writes a figure and the maps t
 ## Documentation
 
 - [docs/problem-inventory.md](docs/problem-inventory.md) — what is missing or wrong, by category
+- [docs/benchmarks.md](docs/benchmarks.md) — published references for the California set and how our port compares
+- [docs/results-california.md](docs/results-california.md) — controlled-misregistration results on a real SAR/optical pair
 - [docs/porting-notes.md](docs/porting-notes.md) — how the MATLAB code maps to Python and where it deviates
 
 ## Provenance

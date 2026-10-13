@@ -125,7 +125,11 @@ def igmls(image_1, image_2, opt):
         cm_pix = labels[it][lab_f0].ravel()
         with np.errstate(invalid="ignore", divide="ignore"):
             change_p = np.bincount((lab_c - 1).ravel(), cm_pix, Nc) / feat_c.counts
-        keep = change_p < 0.5
+        new_keep = change_p < 0.5
+        # Guard (not in the MATLAB original): if the MRF labels nearly everything as change the
+        # library would be empty (KNN needs >= 2 entries), so keep the previous one.
+        if new_keep.sum() > 1:
+            keep = new_keep
 
         dre_iter[it] = dre
         rng = fmin.max() - fmin.min()

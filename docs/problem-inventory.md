@@ -15,7 +15,7 @@ required is a held-out set for tuning and a separate set for testing (A9).
 ## A. Data
 | ID | Problem | Evidence |
 |---|---|---|
-| A1 | No heterogeneous (SAR↔optical) pairs; both bundled sets are optical↔optical | V |
+| A1 | The two bundled sets are optical↔optical. A real SAR/optical pair (UiT California, Landsat-8 ↔ Sentinel-1) was obtained separately and is used for evaluation; more scenes are still needed | V |
 | A2 | The paper's controlled-misregistration example (6 px, 3°) has no data and no generation script | V |
 | A3 | No ground-truth registration (transform or displacement field); alignment quality cannot be measured | V |
 | A4 | Misregistration in the bundled pairs is uncharacterised. Dataset2 shows non-uniform shifts (≈ −5 to −25 px vertical, −10 to +9 px horizontal on edge-map phase correlation); Dataset1 is inconclusive | V |
@@ -43,6 +43,8 @@ required is a held-out set for tuning and a separate set for testing (A9).
 | B12 | A border of width `wh` is cropped and never assessed | V |
 | B13 | Asymmetric: image 1 is always the reference; no bidirectional consistency check | V |
 | B14 | Scaling unknown: template count grows as (2·wh/ws+1)² and memory with `Nf`·4·bands | V/I |
+| B15 | On real SAR/optical data (California) the local search returns near-random offsets: displacement RMSE ≈ guess level and worse than predicting zero; the same code recovers the true shift in an L8↔L8 control. See `docs/results-california.md` | V |
+| B16 | If the MRF labels (almost) everything as change, the next-iteration KNN library is empty and the original algorithm fails; a guard was added in the port | V |
 
 ## C. Implementation / port
 | ID | Problem | Evidence |
