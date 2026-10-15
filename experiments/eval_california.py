@@ -4,6 +4,10 @@ Image 2 (SAR) is shifted or rotated by a known amount; the change ground truth s
 image-1 frame. For each condition we compare IGmLs with several search windows against a
 zero-window baseline (wh=0: same difference measure and MRF, no local search).
 
+Shifts are diagonal: "shift N" moves image 2 by (N, N) px per axis, a displacement of N*sqrt(2) px.
+All methods are scored on the same interior (the border of the largest search window is excluded for
+every method), so the no-search baseline and the windowed runs are compared on identical pixels.
+
 Usage: python experiments/eval_california.py [--crops 3] [--out results/california]
 """
 import argparse
@@ -19,6 +23,7 @@ from igmls import IGmLsOptions, igmls, performance
 
 CROP, MARGIN = 512, 32
 METHODS = {"no-search (wh=0)": 0, "IGmLs wh=9": 9, "IGmLs wh=18": 18}
+MAXWH = max(METHODS.values())  # common scoring border
 CONDITIONS = [("none", 0)] + [("shift", s) for s in (3, 6, 9, 12)] + [("rot", r) for r in (1, 2, 3, 4)]
 
 
@@ -48,9 +53,11 @@ def pick_crops(roi, n):
 
 
 def disp_error(dre, sup, wh, truth):
-    """RMSE (px) and share within 3 px of the true displacement, over all pixels."""
-    est = dre[sup - 1]  # (ht1, wt1, 2), crop interior
-    tr = truth[wh:wh + est.shape[0], wh:wh + est.shape[1]]
+    """RMSE (px) and share within 3 px of the true displacement, over the common scored interior."""
+    est = dre[sup - 1]  # (ht1, wt1, 2), crop interior with a border of wh
+    k = MAXWH - wh
+    est = est[k:est.shape[0] - k, k:est.shape[1] - k]
+    tr = truth[MAXWH:CROP - MAXWH, MAXWH:CROP - MAXWH]
     err = np.linalg.norm(est - tr, axis=2)
     return float(np.sqrt((err**2).mean())), float((err <= 3).mean())
 
@@ -81,8 +88,9 @@ def main():
                 t0 = time.time()
                 opt = IGmLsOptions(Nf=1000, Nc=200, Niter=2, wh=wh, ws=3 if wh else 1)
                 cm, _, info = igmls(a, b, opt)
-                # score only the interior that was actually assessed (wh border is cropped)
-                m = performance(cm[wh:CROP - wh, wh:CROP - wh, -1], gt[wh:CROP - wh, wh:CROP - wh])
+                # score every method on the same interior (MAXWH border excluded)
+                m = performance(cm[MAXWH:CROP - MAXWH, MAXWH:CROP - MAXWH, -1],
+                                gt[MAXWH:CROP - MAXWH, MAXWH:CROP - MAXWH])
                 rmse, within = disp_error(info["dre"][-1], info["superpixels"], wh, truth)
                 rows.append(dict(crop=ci, kind=kind, mag=mag, method=name, f1=m["f1"], kappa=m["kappa"],
                                  oa=m["oa"], rmse=rmse, within3=within, sec=time.time() - t0))
